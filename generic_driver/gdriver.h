@@ -28,6 +28,10 @@ typedef int (*match_packet_fun_t)(char*, char*);
 int gdriver_add_ectx(const char *hfile, const char *hh, const char *ph, const char *th,
     fill_packet_fun_t fill_cb, void *l2_img, size_t l2_img_size,
     void *matching_ctx, size_t matching_ctx_size);
+
+int gdriver_init(int argc, char **argv, match_packet_fun_t matching_cb, int *ectx_num);
 int gdriver_run();
 int gdriver_fini();
-int gdriver_init(int argc, char **argv, match_packet_fun_t matching_cb, int *ectx_num);
+
+int gdriver_set_packet_fill_callback(fill_packet_fun_t pkt_fill_fun);
+int gdriver_set_l2_img(void *img, size_t size);
