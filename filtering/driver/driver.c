@@ -11,8 +11,8 @@
 uint32_t fill_packet(uint32_t msg_idx, uint32_t pkt_idx, uint8_t *pkt_buff, uint32_t max_pkt_size, uint32_t* l1_pkt_size)
 {   
     assert(max_pkt_size >= KEY_SIZE);
-    for(int i = 0; i < KEY_SIZE; i++){
-        ()pkt_buff[i] = rand();
+    for(int i = 0; i < KEY_SIZE / sizeof(uint32_t); i++){
+        ((uint32_t *)pkt_buff)[i] = rand();
     }
     return max_pkt_size;
 }
@@ -24,7 +24,14 @@ uint32_t fill_packet(uint32_t msg_idx, uint32_t pkt_idx, uint8_t *pkt_buff, uint
 // int gdriver_fini();
 // int gdriver_init(int argc, char **argv, match_packet_fun_t matching_cb, int *ectx_num);
 
-uint16_t hashmult(const uint16_t key)
+uint16_t hashmult(const uint16_t key){
+    uint16_t hash = 0;
+    uint8_t *key_byte = (uint8_t *) &key;
+    for(uint16_t i = 0; i < sizeof(uint16_t); i++){
+        hash = hash * 31 + (key_byte[i]);
+    }
+    return hash;
+}
 
 void fill_htable(uint32_t *vec, uint32_t length){
     for(uint32_t i = 0; i < length; i++){

@@ -1,15 +1,17 @@
 #ifndef HOST
 // files in ${PSPIN_RT}/runtime/include
 #include <handler.h>
-#include <packets.h>
-#include <spin_dma.h>
 #else
 #include <handler_profiler.h>
 #endif
 
-#ifndef NUM_INT_OP
 #define NUM_INT_OP 0
-#endif
+#define STRIDE 1
+#define OFFSET 0
+#define MAX_HPUS_IN_CLUSTER 4
+
+#include <packets.h>
+#include <spin_dma.h>
 
 #include "filtering.h"
 #include <packets.h>
@@ -30,16 +32,17 @@ volatile __attribute__((section(".l2_handler_data"))) uint8_t handler_mem[] = {0
 //     uint32_t hpu_id;
 // } handler_args_t;
 
-uint32_t fnvHash(uint8_t keybyte){
-    constexpr uint32_t FNV_OFFSET_BASIS = 2166136261U;
-    constexpr uint32_t FNV_PRIME = 16777619U;
+uint32_t fnvHash(uint8_t* keybyte, size_t length){
+    const uint32_t FNV_OFFSET_BASIS = 2166136261U;
+    const uint32_t FNV_PRIME = 16777619U;
 
     uint32_t hash = FNV_OFFSET_BASIS;
-    const uint8_t* key = reinterpret_cast<const uint8_t*>(&keybyte);
+    // const uint8_t* key = reinterpret_cast<const uint8_t*>(&keybyte);
+    for(size_t i = 0; i < length; i++){
+        hash ^= (uint32_t) (keybyte[i]);
+        hash *= FNV_PRIME;
+    }
 
-    hash ^= static_cast<uint32_t>(*key);
-    hash *= FNV_PRIME;
-    
     return hash;
 }
  
@@ -54,8 +57,11 @@ __handler__ void filtering_ph(handler_args_t *args){
     uint32_t hash;
     // generate hash value of keybyte and lengthof(keybyte), stored in hash
     // to be done
+    hash = fnvHash(key_byte, KEY_SIZE);
 
-    hash = (keybyte);
+    // hash need to be powers of 2
+    hash = FAST_MOD(hash, TOT_WORDS);
+    
     //
     *((uint32_t *) task -> l2_pkt_mem) = mem[hash];
 
@@ -66,7 +72,7 @@ __handler__ void filtering_ph(handler_args_t *args){
 
 }
 
-void init_handlers(handler_fn *hh, handler_fn, *ph, handler_fn *th, void *handler_mem_ptr){
+void init_handlers(handler_fn *hh, handler_fn *ph, handler_fn *th, void **handler_mem_ptr){
     volatile handler_fn handlers[] = {NULL, filtering_ph, NULL};
     *hh = handlers[0];
     *ph = handlers[1];

@@ -32,7 +32,8 @@
 #define EC_MAX_NUM 2
 
 #define NIC_L2_ADDR 0x1c300000
-#define NIC_L2_SIZE (1024 * 1024)
+// #define NIC_L2_SIZE (1024 * 1024)
+#define NIC_L2_SIZE (2048 * 2048)
 #define NIC_L2_EC_CHUNK_SIZE (NIC_L2_SIZE / EC_MAX_NUM)
 
 #define HOST_ADDR 0xdeadbeefdeadbeef
